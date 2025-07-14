@@ -1,3 +1,4 @@
+import Menu from "./components/Menu";
 import "./globals.css";
 
 export default function RootLayout({
@@ -8,6 +9,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body>
+        <Menu />
         {children}
       </body>
     </html>
