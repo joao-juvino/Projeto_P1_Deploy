@@ -11,7 +11,7 @@ class UserAlreadyExistsError(ConflictError):
 
 class EmailAlreadyRegisteredError(UserAlreadyExistsError):
     def __init__(self, message="Email is already registered."):
-        super()__init__(message)
+        super().__init__(message)
 
 
 class UsernameAlreadyTakenError(UserAlreadyExistsError):
