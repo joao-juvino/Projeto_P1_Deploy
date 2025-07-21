@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime
 from pymongo.database import Database
 from werkzeug.security import generate_password_hash
 from app.utils.email_sender import send_confirmation_email
@@ -29,8 +28,7 @@ def register_user(db_client: Database, username: str, email: str, password: str)
         "email": email,
         "password": hashed_password,
         "email_confirmed": False,
-        "confirmation_token": token,
-        "createdAt": datetime.utcnow()
+        "confirmation_token": token
     }
     
     user_repository.create_user(db_client, user_data)
