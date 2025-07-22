@@ -10,13 +10,8 @@ def register_user(db_client: Database, username: str, email: str, password: str)
     if not username or not email or not password:
         raise ValueError("Missing required fields.")
 
-    existing_user = user_repository.find_user_by_email(db_client, email)
-    if existing_user:
-        if existing_user.get("email_confirmed"):
-            raise EmailAlreadyRegisteredError("This email is already in use.")
-        else:
-            raise EmailAlreadyRegisteredError("This email is already registered but awaits confirmation.")
-    
+   if user_repository.find_user_by_email(db_client, email):
+        raise EmailAlreadyRegisteredError()
     if user_repository.find_user_by_username(db_client, username):
         raise UsernameAlreadyTakenError()
 
@@ -31,13 +26,13 @@ def register_user(db_client: Database, username: str, email: str, password: str)
         "confirmation_token": token
     }
     
-    user_repository.create_user(db_client, user_data)
+    user_id = user_repository.create_user(db_client, user_data)
     
     try:
         send_confirmation_email(email, token)
     except Exception as e:
         print(f"CRITICAL ERROR: User {username} created, but confirmation email failed: {e}")
-    return
+    return 
 
 def confirm_user_token(db_client: Database, token: str):
     user = user_repository.find_user_by_token(db_client, token)
