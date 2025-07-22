@@ -13,9 +13,9 @@ def register_user(db_client: Database, username: str, email: str, password: str)
     existing_user = user_repository.find_user_by_email(db_client, email)
     if existing_user:
         if existing_user.get("email_confirmed"):
-            raise EmailAlreadyRegisteredError("Este e-mail já está em uso.")
+            raise EmailAlreadyRegisteredError("This email is already in use.")
         else:
-            raise EmailAlreadyRegisteredError("Este e-mail já foi registrado, mas aguarda confirmação.")
+            raise EmailAlreadyRegisteredError("This email is already registered but awaits confirmation.")
     
     if user_repository.find_user_by_username(db_client, username):
         raise UsernameAlreadyTakenError()
@@ -36,19 +36,19 @@ def register_user(db_client: Database, username: str, email: str, password: str)
     try:
         send_confirmation_email(email, token)
     except Exception as e:
-        print(f"ERRO CRÍTICO: Usuário {username} criado, mas e-mail de confirmação falhou: {e}")
+        print(f"CRITICAL ERROR: User {username} created, but confirmation email failed: {e}")
     return
 
 def confirm_user_token(db_client: Database, token: str):
     user = user_repository.find_user_by_token(db_client, token)
 
     if not user:
-        raise ValueError("Token de confirmação inválido ou expirado.")
+        raise ValueError("Invalid or expired confirmation token.")
 
     user_id = str(user['_id'])
     success = user_repository.set_user_as_confirmed(db_client, user_id)
 
     if not success:
-        raise Exception("Ocorreu um erro ao tentar confirmar o usuário no banco de dados.")
+        raise Exception("An error occurred while trying to confirm the user in the database.")
     
     return

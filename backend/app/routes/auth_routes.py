@@ -28,17 +28,16 @@ def signup_route():
     except Exception as e:
         return jsonify({"message": "An internal server error occurred."}), 500
     
-
 @auth_bp.route("/confirm/<token>", methods=["GET"])
 def confirm_email_route(token: str):
     db_client = current_app.mongo_db
 
     try:
         auth_service.confirm_user_token(db_client, token)
-        return jsonify({"message": "E-mail confirmado com sucesso! Você já pode fazer login."}), 200
+        return jsonify({"message": "Email confirmed successfully! You can now log in."}), 200
 
     except ValueError as e:
         return jsonify({"message": str(e)}), 400
 
     except Exception as e:
-        return jsonify({"message": "Ocorreu um erro interno ao processar a confirmação."}), 500
+        return jsonify({"message": "An internal error occurred while processing the confirmation."}), 500
