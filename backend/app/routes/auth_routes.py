@@ -47,7 +47,7 @@ def confirm_email_route(token: str):
 @auth_bp.route("/signin", methods=["POST"])
 def login():
     database = current_app.mongo_db
-    
+
     data = request.json
     username = data.get("username")
     email = data.get("email")
@@ -58,5 +58,5 @@ def login():
         return jsonify({"message": "Login Successful!"}), 200
     except InvalidCredentialsError as e:
         return jsonify({"message": e.message()}), 401
-    except Exception as e:
-        return jsonify({"message": "An internal error occurred while processing the confirmation."}), 500
+    except ValueError as e:
+        return jsonify({"message": e.message()}), 500

@@ -1,6 +1,6 @@
 import uuid
 from pymongo.database import Database
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from app.utils.email_sender import send_confirmation_email
 from app.repositories import user_repository
 from app.exceptions.auth_exceptions import UsernameAlreadyTakenError, EmailAlreadyRegisteredError
@@ -40,10 +40,30 @@ def confirm_user_token(db_client: Database, token: str):
     if not user:
         raise ValueError("Invalid or expired confirmation token.")
 
-    user_id = str(user['_id'])
+    user_id = user['_id']
     success = user_repository.set_user_as_confirmed(db_client, user_id)
 
     if not success:
         raise Exception("An error occurred while trying to confirm the user in the database.")
     
-    return
+    return user_id
+
+
+def login(db_client: Database, username: str, email: str, password: str):
+
+    user = None
+    if username is not None:
+        user = user_repository.find_user_by_username(db_client, username)
+    if email is not None:
+        user = user_repository.find_user_by_email(db_client, email)
+    
+    if user is None:
+        raise InvalidCredentialsError()
+    if not user.get("email_confirmed"):
+        raise ValueError("Email needs to be confirmed")
+    
+    hashed_password = user["password"]
+    if not check_password_hash(hashed_password, password):
+        raise InvalidCredentialsError()
+    
+    return user["id"]
