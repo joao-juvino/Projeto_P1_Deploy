@@ -1,0 +1,7 @@
+[{
+  "title": "Two Sum",
+  "summary": "Easy difficulty. Topics: Arrays, Hash Table. Find indices of two numbers in the array that sum to a target.",
+  "description": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order.",
+  "solution": "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        for (int i = 0; i < nums.length; i++) {\n            for (int j = i + 1; j < nums.length; j++) {\n                if (nums[j] == target - nums[i]) {\n                    return new int[] { i, j };\n                }\n            }\n        }\n        return new int[] {};\n    }\n}",
+  "notes": "Classic problem often used to test understanding of brute force and hash map optimization. Only one valid pair exists by assumption."
+}]
