@@ -40,3 +40,32 @@ def send_confirmation_email(recipient_email: str, token: str):
     msg.html = html_body
     
     mail.send(msg)
+
+def send_password_reset_email(email: str, reset_token: str):
+    """Envia email de recuperação de senha"""
+    
+    # URL para reset - ajuste conforme sua aplicação
+    reset_link = f"http://localhost:3000/reset-password?token={reset_token}"
+    
+    subject = "Recuperação de Senha"
+    
+    html_body = f"""
+    <h2>Recuperação de Senha</h2>
+    <p>Clique no link abaixo para redefinir sua senha:</p>
+    <p><a href="{reset_link}">Redefinir Senha</a></p>
+    <p>Este link expira em 1 hora.</p>
+    <p>Se você não solicitou isso, ignore este email.</p>
+    """
+    
+    text_body = f"""
+    Recuperação de Senha
+    
+    Clique no link para redefinir sua senha:
+    {reset_link}
+    
+    Este link expira em 1 hora.
+    """
+    
+    # Use sua função de envio existente
+    # Exemplo: send_email(email, subject, html_body, text_body)
+    print(f"Email enviado para {email}: {reset_link}")  # Para teste

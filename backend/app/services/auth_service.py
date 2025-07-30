@@ -67,3 +67,53 @@ def login(db_client: Database, username: str, email: str, password: str):
         raise InvalidCredentialsError()
     
     return user["id"]
+
+ef request_password_reset(db_client: Database, email: str):
+    """Solicita recuperação de senha"""
+    if not email:
+        raise ValueError("Email is required.")
+    
+    user = user_repository.find_user_by_email(db_client, email.lower().strip())
+    
+    # Sempre retorna sucesso por segurança
+    if not user:
+        return True
+    
+    # Gera token que expira em 1 hora
+    reset_token = str(uuid.uuid4())
+    expires_at = datetime.utcnow() + timedelta(hours=1)
+    
+    # Salva token no usuário
+    user_repository.save_reset_token(db_client, user['_id'], reset_token, expires_at)
+    
+    # Envia email
+    try:
+        from app.utils.email_sender import send_password_reset_email
+        send_password_reset_email(email, reset_token)
+    except Exception as e:
+        print(f"CRITICAL ERROR: Reset token created for {email}, but email failed: {e}")
+    
+    return True
+
+def reset_password(db_client: Database, token: str, new_password: str):
+    """Redefine senha com token"""
+    if not token or not new_password:
+        raise ValueError("Token and password are required.")
+    
+    if len(new_password) < 6:
+        raise ValueError("Password must be at least 6 characters long.")
+    
+    # Busca usuário pelo token válido
+    user = user_repository.find_user_by_reset_token(db_client, token)
+    
+    if not user:
+        raise ValueError("Invalid or expired reset token.")
+    
+    # Atualiza senha
+    hashed_password = generate_password_hash(new_password)
+    success = user_repository.update_password(db_client, user['_id'], hashed_password)
+    
+    if not success:
+        raise Exception("Failed to update password.")
+    
+    return True
