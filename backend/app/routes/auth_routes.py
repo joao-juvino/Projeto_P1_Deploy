@@ -60,3 +60,47 @@ def login():
         return jsonify({"message": e.message()}), 401
     except ValueError as e:
         return jsonify({"message": e.message()}), 500
+
+@auth_bp.route("/forgot-password", methods=["POST"])
+def forgot_password():
+    """Solicitar recuperação de senha"""
+    data = request.get_json()
+    
+    try:
+        email = data.get("email")
+        if not email:
+            return jsonify({"message": "Email is required."}), 400
+        
+        auth_service.request_password_reset(current_app.mongo_db, email)
+        
+        return jsonify({
+            "message": "If email exists, reset link will be sent."
+        }), 200
+        
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
+    except Exception as e:
+        return jsonify({"message": "An internal server error occurred."}), 500
+
+@auth_bp.route("/reset-password", methods=["POST"])
+def reset_password():
+    """Redefinir senha com token"""
+    data = request.get_json()
+    
+    try:
+        token = data.get("token")
+        password = data.get("password")
+        
+        if not token or not password:
+            return jsonify({"message": "Token and password are required."}), 400
+        
+        auth_service.reset_password(current_app.mongo_db, token, password)
+        
+        return jsonify({
+            "message": "Password reset successfully!"
+        }), 200
+        
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
+    except Exception as e:
+        return jsonify({"message": "An internal server error occurred."}), 500

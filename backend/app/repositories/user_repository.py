@@ -2,6 +2,7 @@ from pymongo.database import Database
 from pymongo.collection import Collection 
 from typing import Dict, Any
 from bson.objectid import ObjectId
+from datetime import datetime
 
 def get_users_collection(db_client: Database) -> Collection:
     return db_client.users
@@ -30,6 +31,38 @@ def set_user_as_confirmed(db_client: Database, user_id: str) -> bool:
         {
             "$set": {"email_confirmed": True},
             "$unset": {"confirmation_token": ""}
+        }
+    )
+    return result.modified_count == 1
+
+def save_reset_token(db_client: Database, user_id, reset_token: str, expires_at: datetime):
+    """Salva token de reset no usuário"""
+    users_collection = get_users_collection(db_client)
+    result = users_collection.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {
+            "reset_token": reset_token,
+            "reset_token_expires": expires_at
+        }}
+    )
+    return result.modified_count == 1
+
+def find_user_by_reset_token(db_client: Database, token: str):
+    """Busca usuário por token de reset válido"""
+    users_collection = get_users_collection(db_client)
+    return users_collection.find_one({
+        "reset_token": token,
+        "reset_token_expires": {"$gt": datetime.utcnow()}
+    })
+
+def update_password(db_client: Database, user_id, hashed_password: str):
+    """Atualiza senha e remove token de reset"""
+    users_collection = get_users_collection(db_client)
+    result = users_collection.update_one(
+        {"_id": ObjectId(user_id)},
+        {
+            "$set": {"password": hashed_password},
+            "$unset": {"reset_token": "", "reset_token_expires": ""}
         }
     )
     return result.modified_count == 1
