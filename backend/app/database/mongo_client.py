@@ -1,9 +1,7 @@
 import os
-from dotenv import load_dotenv
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 
-load_dotenv()
 _mongo_client = None
 
 
