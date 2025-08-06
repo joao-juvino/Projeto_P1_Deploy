@@ -1,4 +1,5 @@
-from flask import Blueprint, request, jsonify, current_app
+from sanic import Blueprint, Request
+from sanic.response import json
 from app.services import auth_service
 from app.exceptions.auth_exceptions import (
     UsernameAlreadyTakenError, 
@@ -9,98 +10,87 @@ from app.exceptions.auth_exceptions import (
 auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/signup", methods=["POST"])
-def signup_route():
-    data = request.get_json()
-
-    try:
-        auth_service.register_user(
-            db_client=current_app.mongo_db,
-            username=data.get("username"),
-            email=data.get("email"),
-            password=data.get("password")
-        )
-        return jsonify({
-            "message": "Registration request successful! Please check your email to confirm your account."
-        }), 201
-
-    except (UsernameAlreadyTakenError, EmailAlreadyRegisteredError) as e:
-        return jsonify({"message": e.message}), 409
-    except ValueError as e:
-        return jsonify({"message": str(e)}), 400
-    except Exception as e:
-        return jsonify({"message": "An internal server error occurred."}), 500
-    
-@auth_bp.route("/confirm/<token>", methods=["GET"])
-def confirm_email_route(token: str):
-    db_client = current_app.mongo_db
-
-    try:
-        auth_service.confirm_user_token(db_client, token)
-        return jsonify({"message": "Email confirmed successfully! You can now log in."}), 200
-
-    except ValueError as e:
-        return jsonify({"message": str(e)}), 400
-
-    except Exception as e:
-        return jsonify({"message": "An internal error occurred while processing the confirmation."}), 500
-
-@auth_bp.route("/signin", methods=["POST"])
-def login():
-    database = current_app.mongo_db
-
-    data = request.json
+async def signup_route(request: Request):
+    db = request.app.ctx.mongo_db
+    data = await request.json()
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
 
     try:
-        auth_service.login(database, username, email, password)
-        return jsonify({"message": "Login Successful!"}), 200
-    except InvalidCredentialsError as e:
-        return jsonify({"message": e.message()}), 401
+        auth_service.register_user(db, username, email, password)
+        response_body = {
+            "message": "Registration successful! Please check your email to confirm your account."
+        }
+        return json(response_body, status=201)
+    except (UsernameAlreadyTakenError, EmailAlreadyRegisteredError) as e:
+        return json({"message": str(e)}, status=409)
     except ValueError as e:
-        return jsonify({"message": e.message()}), 500
+        return json({"message": str(e)}, status=400)
+    except Exception as e:
+        return json({"message": "An internal server error occurred."}, status=500)
+
+
+@auth_bp.route("/confirm/<token>", methods=["GET"])
+async def confirm_email_route(request: Request, token: str):
+    db = request.app.ctx.mongo_db
+
+    try:
+        auth_service.confirm_user_token(db, token)
+        return json({"message": "Email confirmed successfully! You can now log in."}, status=200)
+    except ValueError as e:
+        return json({"message": str(e)}, status=400)
+    except Exception as e:
+        return json({"message": "An internal error occurred."}, status=500)
+
+
+@auth_bp.route("/signin", methods=["POST"])
+async def login(request: Request):
+    db = request.app.ctx.mongo_db
+
+    data = await request.json()
+    username = data.get("username")
+    email = data.get("email")
+    password = data.get("password")
+
+    try:
+        auth_service.login(db, username, email, password)
+        return json({"message": "Login Successful!"}, status=200)
+    except InvalidCredentialsError as e:
+        return json({"message": str(e)}, status=401)
+    except ValueError as e:
+        return json({"message": str(e)}, status=500)
+
 
 @auth_bp.route("/forgot-password", methods=["POST"])
-def forgot_password():
+async def forgot_password(request: Request):
     """Solicitar recuperação de senha"""
-    data = request.get_json()
+    db = request.app.ctx.mongo_db
+    data = await request.json()
+    email = data.get("email")
     
-    try:
-        email = data.get("email")
-        if not email:
-            return jsonify({"message": "Email is required."}), 400
-        
-        auth_service.request_password_reset(current_app.mongo_db, email)
-        
-        return jsonify({
-            "message": "If email exists, reset link will be sent."
-        }), 200
-        
+    try:        
+        auth_service.request_password_reset(db, email)
+        return json({"message": f"Reset link sent to {email}."}, status=200)
     except ValueError as e:
-        return jsonify({"message": str(e)}), 400
+        return json({"message": str(e)}, status=400)
     except Exception as e:
-        return jsonify({"message": "An internal server error occurred."}), 500
+        return json({"message": "An internal server error occurred."}, status=500)
+
 
 @auth_bp.route("/reset-password", methods=["POST"])
-def reset_password():
+async def reset_password(request: Request):
     """Redefinir senha com token"""
-    data = request.get_json()
+    db = request.app.ctx.mongo_db
+
+    data = await request.json()
+    token = data.get("token")
+    password = data.get("password")
     
-    try:
-        token = data.get("token")
-        password = data.get("password")
-        
-        if not token or not password:
-            return jsonify({"message": "Token and password are required."}), 400
-        
-        auth_service.reset_password(current_app.mongo_db, token, password)
-        
-        return jsonify({
-            "message": "Password reset successfully!"
-        }), 200
-        
+    try:        
+        auth_service.reset_password(db, token, password)
+        return json({"message": "Password reset successfully!"}, status=200)
     except ValueError as e:
-        return jsonify({"message": str(e)}), 400
+        return json({"message": str(e)}, status=400)
     except Exception as e:
-        return jsonify({"message": "An internal server error occurred."}), 500
+        return json({"message": "An internal server error occurred."}, status=500)
