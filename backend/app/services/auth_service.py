@@ -5,6 +5,7 @@ from app.utils.email_sender import send_confirmation_email
 from app.repositories import user_repository
 from app.exceptions.auth_exceptions import UsernameAlreadyTakenError, EmailAlreadyRegisteredError
 
+
 def register_user(db_client: Database, username: str, email: str, password: str):
     
     if not username or not email or not password:
@@ -33,6 +34,7 @@ def register_user(db_client: Database, username: str, email: str, password: str)
     except Exception as e:
         print(f"CRITICAL ERROR: User {username} created, but confirmation email failed: {e}")
     return 
+
 
 def confirm_user_token(db_client: Database, token: str):
     user = user_repository.find_user_by_token(db_client, token)
@@ -68,8 +70,10 @@ def login(db_client: Database, username: str, email: str, password: str):
     
     return user["id"]
 
-ef request_password_reset(db_client: Database, email: str):
+
+def request_password_reset(db_client: Database, email: str):
     """Solicita recuperação de senha"""
+    
     if not email:
         raise ValueError("Email is required.")
     
@@ -88,12 +92,12 @@ ef request_password_reset(db_client: Database, email: str):
     
     # Envia email
     try:
-        from app.utils.email_sender import send_password_reset_email
         send_password_reset_email(email, reset_token)
     except Exception as e:
         print(f"CRITICAL ERROR: Reset token created for {email}, but email failed: {e}")
     
     return True
+
 
 def reset_password(db_client: Database, token: str, new_password: str):
     """Redefine senha com token"""
