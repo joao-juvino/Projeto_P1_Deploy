@@ -12,13 +12,13 @@ auth_bp = Blueprint("auth", __name__)
 @auth_bp.route("/signup", methods=["POST"])
 async def signup_route(request: Request):
     db = request.app.ctx.mongo_db
-    data = await request.json()
+    data = request.json
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
 
     try:
-        auth_service.register_user(db, username, email, password)
+        await auth_service.register_user(db, username, email, password)
         response_body = {
             "message": "Registration successful! Please check your email to confirm your account."
         }
@@ -36,7 +36,7 @@ async def confirm_email_route(request: Request, token: str):
     db = request.app.ctx.mongo_db
 
     try:
-        auth_service.confirm_user_token(db, token)
+        await auth_service.confirm_user_token(db, token)
         return json({"message": "Email confirmed successfully! You can now log in."}, status=200)
     except ValueError as e:
         return json({"message": str(e)}, status=400)
@@ -48,7 +48,7 @@ async def confirm_email_route(request: Request, token: str):
 async def login(request: Request):
     db = request.app.ctx.mongo_db
 
-    data = await request.json()
+    data = request.json
     username = data.get("username")
     email = data.get("email")
     password = data.get("password")
@@ -66,11 +66,11 @@ async def login(request: Request):
 async def forgot_password(request: Request):
     """Solicitar recuperação de senha"""
     db = request.app.ctx.mongo_db
-    data = await request.json()
+    data = request.json
     email = data.get("email")
     
     try:        
-        auth_service.request_password_reset(db, email)
+        await auth_service.request_password_reset(db, email)
         return json({"message": f"Reset link sent to {email}."}, status=200)
     except ValueError as e:
         return json({"message": str(e)}, status=400)
@@ -82,13 +82,12 @@ async def forgot_password(request: Request):
 async def reset_password(request: Request):
     """Redefinir senha com token"""
     db = request.app.ctx.mongo_db
-
-    data = await request.json()
+    data = request.json
     token = data.get("token")
     password = data.get("password")
     
     try:        
-        auth_service.reset_password(db, token, password)
+        await auth_service.reset_password(db, token, password)
         return json({"message": "Password reset successfully!"}, status=200)
     except ValueError as e:
         return json({"message": str(e)}, status=400)

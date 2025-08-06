@@ -1,17 +1,17 @@
 import uuid
 from pymongo.database import Database
 from werkzeug.security import generate_password_hash, check_password_hash
-from app.utils.email_sender import send_confirmation_email
+from app.utils.email_sender import send_confirmation_email, send_password_reset_email
 from app.repositories import user_repository
 from app.exceptions.auth_exceptions import UsernameAlreadyTakenError, EmailAlreadyRegisteredError
 
 
-def register_user(db_client: Database, username: str, email: str, password: str):
+async def register_user(db_client: Database, config, username: str, email: str, password: str):
     
     if not username or not email or not password:
         raise ValueError("Missing required fields.")
 
-   if user_repository.find_user_by_email(db_client, email):
+    if user_repository.find_user_by_email(db_client, email):
         raise EmailAlreadyRegisteredError()
     if user_repository.find_user_by_username(db_client, username):
         raise UsernameAlreadyTakenError()
@@ -30,10 +30,9 @@ def register_user(db_client: Database, username: str, email: str, password: str)
     user_id = user_repository.create_user(db_client, user_data)
     
     try:
-        send_confirmation_email(email, token)
+        await send_confirmation_email(config, email, token)
     except Exception as e:
         print(f"CRITICAL ERROR: User {username} created, but confirmation email failed: {e}")
-    return 
 
 
 def confirm_user_token(db_client: Database, token: str):
@@ -71,7 +70,7 @@ def login(db_client: Database, username: str, email: str, password: str):
     return user["id"]
 
 
-def request_password_reset(db_client: Database, email: str):
+async def request_password_reset(db_client: Database, email: str):
     """Solicita recuperação de senha"""
     
     if not email:
@@ -92,14 +91,14 @@ def request_password_reset(db_client: Database, email: str):
     
     # Envia email
     try:
-        send_password_reset_email(email, reset_token)
+        await send_password_reset_email(email, reset_token)
     except Exception as e:
         print(f"CRITICAL ERROR: Reset token created for {email}, but email failed: {e}")
     
     return True
 
 
-def reset_password(db_client: Database, token: str, new_password: str):
+async def reset_password(db_client: Database, token: str, new_password: str):
     """Redefine senha com token"""
     if not token or not new_password:
         raise ValueError("Token and password are required.")
