@@ -9,7 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@codemirror/lang-javascript": "^6.2.4",
     "@tailwindcss/postcss": "^4.1.11",
+    "@uiw/react-codemirror": "^4.24.2",
+    "antd": "^5.26.7",
+    "lucide-react": "^0.539.0",
     "next": "15.3.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
