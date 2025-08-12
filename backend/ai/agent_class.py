@@ -1,6 +1,8 @@
 from livekit.agents import Agent
 from livekit.plugins import elevenlabs
+from dotenv import load_dotenv
 
+load_dotenv()
 
 SYSTEM_PROMPT = """
 You are an expert interviewer from a top-tier tech company. Your name is Ada.
@@ -17,13 +19,14 @@ Your process is:
 Always speak in a clear, concise, and professional manner.
 """
 
-
 class InterviewAgent(Agent):
     def __init__(self):
         super().__init__(instructions=SYSTEM_PROMPT)
 
     async def on_enter(self):
-        initial_response = await self.session.generate_reply()
-        await self.session.audio_source.play(
-            elevenlabs.TTS().synthesize(initial_response)
+        # Gera a resposta inicial (saudação)
+        initial_response = await self.session.generate_reply(
+            instructions="Greet the user and introduce yourself."
         )
+        # Faz o agente falar a resposta com TTS da ElevenLabs
+        await self.session.say(initial_response, tts=elevenlabs.TTS())
