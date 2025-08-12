@@ -24,9 +24,7 @@ class InterviewAgent(Agent):
         super().__init__(instructions=SYSTEM_PROMPT)
 
     async def on_enter(self):
-        # Gera a resposta inicial (saudação)
         initial_response = await self.session.generate_reply(
             instructions="Greet the user and introduce yourself."
         )
-        # Faz o agente falar a resposta com TTS da ElevenLabs
-        await self.session.say(initial_response, tts=elevenlabs.TTS())
+        await self.session.say(initial_response)

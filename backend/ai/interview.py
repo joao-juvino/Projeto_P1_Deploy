@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 
 from livekit import agents
 from livekit.agents import AgentSession, RoomInputOptions, AutoSubscribe
-from livekit.plugins import noise_cancellation, silero, google
+from livekit.plugins import noise_cancellation, silero, google, elevenlabs
 
 from agent_class import InterviewAgent
 
@@ -25,23 +25,16 @@ async def interview_entrypoint(ctx):
             output_audio_transcription={}
         ),
         vad=silero.VAD.load(),
+        tts=elevenlabs.TTS()
     )
 
-    # Iniciar a sessão
     await session.start(
         room=ctx.room,
         agent=InterviewAgent(),
         room_input_options=RoomInputOptions(
             noise_cancellation=noise_cancellation.BVC(),
-            # close_on_disconnect=True  # Ative se quiser encerrar ao perder conexão
         ),
     )
-
-    # Primeira mensagem automática
-    await session.generate_reply(
-        instructions="Greet the user and offer your assistance."
-    )
-
 
 if __name__ == "__main__":
     print("BOOOOOORAA BILLLL")
