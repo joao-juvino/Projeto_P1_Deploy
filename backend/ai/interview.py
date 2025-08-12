@@ -10,7 +10,6 @@ load_dotenv()
 
 
 async def interview_entrypoint(ctx):
-    print("ola mundo HAHAHAHAHAHAHAHAHHAHAHAH")
 
     # Conectar à sala, ouvindo apenas áudio
     await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
@@ -37,7 +36,6 @@ async def interview_entrypoint(ctx):
     )
 
 if __name__ == "__main__":
-    print("BOOOOOORAA BILLLL")
     agents.cli.run_app(
         agents.WorkerOptions(entrypoint_fnc=interview_entrypoint)
     )
