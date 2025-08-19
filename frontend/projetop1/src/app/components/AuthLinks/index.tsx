@@ -1,15 +1,19 @@
+"use client";
+
 import Link from "next/link";
 
 interface AuthLinksProps {
   showCreateAccount?: boolean;
   showBackToLogin?: boolean;
   showForgotPassword?: boolean;
+  onForgotPasswordClick?: () => void;
 }
 
 const AuthLinks = ({
   showCreateAccount = false,
   showBackToLogin = false,
   showForgotPassword = false,
+  onForgotPasswordClick,
 }: AuthLinksProps = {}) => {
   if (
     showCreateAccount === undefined &&
@@ -18,12 +22,12 @@ const AuthLinks = ({
   ) {
     return (
       <>
-        <Link
-          className="text-[#37474F] hover:underline"
-          href="/recover-password"
+        <button
+          onClick={onForgotPasswordClick}
+          className="text-[#37474F] hover:underline cursor-pointer bg-none border-none"
         >
           Esqueceu a senha?
-        </Link>
+        </button>
         <Link className="text-[#37474F] hover:underline" href="/cadastro">
           Cadastre-se
         </Link>
@@ -44,12 +48,12 @@ const AuthLinks = ({
         </Link>
       )}
       {showForgotPassword && (
-        <Link
-          href="/recover-password"
-          className="text-[#5CB85C] hover:underline"
+        <button
+          onClick={onForgotPasswordClick}
+          className="text-[#5CB85C] hover:underline cursor-pointer bg-none border-none"
         >
           Esqueci minha senha
-        </Link>
+        </button>
       )}
     </div>
   );
