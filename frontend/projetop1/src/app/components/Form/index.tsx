@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../../contexts/AuthContext";
 import AuthLinks from "../AuthLinks";
 import Input from "../Input";
 import ForgotPasswordModal from "../ForgotPasswordModal";
-import { authService, ApiError } from "../../services/auth";
 
 const Form = () => {
   const router = useRouter();
+  const { login, isLoading: authLoading } = useAuth();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -37,34 +39,30 @@ const Form = () => {
     try {
       // Validação básica
       if (!formData.email || !formData.password) {
-        throw new Error("Por favor, preencha todos os campos");
+        setError("Por favor, preencha todos os campos");
+        return;
       }
 
-      const response = await authService.login({
-        email: formData.email,
-        password: formData.password,
-      });
+      const result = await login(formData.email, formData.password);
 
-      setSuccess(response.message);
+      if (result.success) {
+        setSuccess(result.message || "Login realizado com sucesso!");
 
-      // Redirecionar após login bem-sucedido
-      setTimeout(() => {
-        router.push("/dashboard"); // Ajuste para sua rota pós-login
-      }, 1500);
-    } catch (err: any) {
-      const apiError = err as ApiError;
-
-      if (apiError.status === 401) {
-        setError("Email ou senha incorretos");
-      } else if (apiError.status === 0) {
-        setError("Não foi possível conectar ao servidor");
+        // Redirecionar após login bem-sucedido
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1500);
       } else {
-        setError(apiError.message || "Erro interno do servidor");
+        setError(result.error || "Erro no login");
       }
+    } catch (err: any) {
+      setError(err.message || "Erro interno do servidor");
     } finally {
       setLoading(false);
     }
   };
+
+  const isFormLoading = loading || authLoading;
 
   return (
     <div className="w-full flex justify-center">
@@ -96,7 +94,7 @@ const Form = () => {
             value={formData.email}
             onChange={(value) => handleInputChange("email", value)}
             placeholder="seu@email.com"
-            disabled={loading}
+            disabled={isFormLoading}
           />
 
           <Input
@@ -105,19 +103,19 @@ const Form = () => {
             value={formData.password}
             onChange={(value) => handleInputChange("password", value)}
             placeholder="Digite sua senha"
-            disabled={loading}
+            disabled={isFormLoading}
           />
 
           <button
             className={`w-full my-5 text-white rounded-sm py-3 transition-colors ${
-              loading
+              isFormLoading
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-[#37474F] hover:bg-[#2C3E45]"
             }`}
             type="submit"
-            disabled={loading}
+            disabled={isFormLoading}
           >
-            {loading ? "Entrando..." : "Entrar"}
+            {isFormLoading ? "Entrando..." : "Entrar"}
           </button>
         </form>
 

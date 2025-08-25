@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Input from "../Input";
-import { authService, ApiError } from "../../services/auth";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -14,6 +14,7 @@ const ForgotPasswordModal = ({ isOpen, onClose }: ForgotPasswordModalProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const { forgotPassword } = useAuth();
 
   const resetForm = () => {
     setEmail("");
@@ -43,23 +44,21 @@ const ForgotPasswordModal = ({ isOpen, onClose }: ForgotPasswordModalProps) => {
         throw new Error("Por favor, digite um email válido");
       }
 
-      const response = await authService.forgotPassword(email);
-      setSuccess(response.message);
+      // Usar a função do contexto
+      const result = await forgotPassword(email);
 
-      // Fechar modal após alguns segundos
-      setTimeout(() => {
-        handleClose();
-      }, 3000);
-    } catch (err: any) {
-      const apiError = err as ApiError;
+      if (result.success) {
+        setSuccess(result.message || "Email de recuperação enviado!");
 
-      if (apiError.status === 400) {
-        setError("Email inválido");
-      } else if (apiError.status === 0) {
-        setError("Não foi possível conectar ao servidor");
+        // Fechar modal após alguns segundos
+        setTimeout(() => {
+          handleClose();
+        }, 3000);
       } else {
-        setError(apiError.message || "Erro interno do servidor");
+        throw new Error(result.error || "Erro ao enviar email");
       }
+    } catch (err: any) {
+      setError(err.message || "Erro interno do servidor");
     } finally {
       setLoading(false);
     }
