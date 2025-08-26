@@ -84,15 +84,4 @@ export default function InterviewFlow() {
       </LiveKitRoom>
     </div>
   );
-}_URL}
-        data-lk-theme="default"
-        style={{ height: 'calc(100vh - 120px)' }}
-        connectOptions={{ autoSubscribe: true }}
-      >
-        <InterviewRoom onBack={handleBackToDescription} />
-        <RoomAudioRenderer />
-        <StartAudio label="Clique para ativar áudio" />
-      </LiveKitRoom>
-    </div>
-  );
 }
