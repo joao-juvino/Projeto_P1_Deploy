@@ -18,7 +18,7 @@ async def signup_route(request: Request):
     password = data.get("password")
 
     try:
-        await auth_service.register_user(db, username, email, password)
+        await auth_service.register_user(db, request.app.config, username, email, password)
         response_body = {
             "message": "Registration successful! Please check your email to confirm your account."
         }
@@ -36,7 +36,7 @@ async def confirm_email_route(request: Request, token: str):
     db = request.app.ctx.mongo_db
 
     try:
-        await auth_service.confirm_user_token(db, token)
+        auth_service.confirm_user_token(db, token)
         return json({"message": "Email confirmed successfully! You can now log in."}, status=200)
     except ValueError as e:
         return json({"message": str(e)}, status=400)
