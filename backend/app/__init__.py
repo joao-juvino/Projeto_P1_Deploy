@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from app.database.mongo_client import get_database, close_database_connection
 from app.routes.auth_routes import auth_bp
 from app.routes.general_routes import general_bp
+from sanic_cors import CORS
 
 """
 TODO:
@@ -41,6 +42,17 @@ def create_app() -> Sanic:
     # Register blueprints
     app.blueprint(general_bp)
     app.blueprint(auth_bp, url_prefix="/auth")
+
+    app.config.CORS_ORIGINS = "*"
+    app.config.CORS_ALLOW_HEADERS = "*"
+    app.config.CORS_METHODS = "*"
+
+    CORS(
+        app,
+        origins="*",
+        allow_headers=["Content-Type", "Authorization"],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    )
 
     print("Registered blueprints:", list(app.blueprints.keys()))
     return app
