@@ -27,7 +27,7 @@ def find_user_by_token(db_client: Database, token: str) -> Dict[str, Any] | None
 def set_user_as_confirmed(db_client: Database, user_id: str) -> bool:
     users_collection = get_users_collection(db_client)
     result = users_collection.update_one(
-        {"_id": ObjectId(user_id)},
+        {"_id": user_id},
         {
             "$set": {"email_confirmed": True},
             "$unset": {"confirmation_token": ""}
