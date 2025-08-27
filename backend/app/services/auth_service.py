@@ -3,7 +3,7 @@ from pymongo.database import Database
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.utils.email_sender import send_confirmation_email, send_password_reset_email
 from app.repositories import user_repository
-from app.exceptions.auth_exceptions import UsernameAlreadyTakenError, EmailAlreadyRegisteredError
+from app.exceptions.auth_exceptions import UsernameAlreadyTakenError, EmailAlreadyRegisteredError, InvalidCredentialsError
 
 
 async def register_user(db_client: Database, config, username: str, email: str, password: str):
@@ -17,6 +17,7 @@ async def register_user(db_client: Database, config, username: str, email: str, 
         raise UsernameAlreadyTakenError()
 
     token = str(uuid.uuid4())
+    print("TOKEN: " + token, flush=True)
     hashed_password = generate_password_hash(password)
     
     user_data = {
@@ -47,7 +48,7 @@ def confirm_user_token(db_client: Database, token: str):
     if not success:
         raise Exception("An error occurred while trying to confirm the user in the database.")
     
-    return user_id
+    return user['_id']
 
 
 def login(db_client: Database, username: str, email: str, password: str):
@@ -67,7 +68,7 @@ def login(db_client: Database, username: str, email: str, password: str):
     if not check_password_hash(hashed_password, password):
         raise InvalidCredentialsError()
     
-    return user["id"]
+    return user["_id"]
 
 
 async def request_password_reset(db_client: Database, email: str):
