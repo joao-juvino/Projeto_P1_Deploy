@@ -1,20 +1,41 @@
-from sanic import Request, WebSocket, Blueprint
+import os
+from sanic import Blueprint, Request
 from sanic.response import json
-from app.services import interview_service
+from livekit.api import AccessToken, VideoGrants
 
-interview_bp = Blueprint("interview")
-sessions = dict()
+LIVEKIT_API_KEY = os.getenv("LIVEKIT_API_KEY")
+LIVEKIT_API_SECRET = os.getenv("LIVEKIT_API_SECRET")
 
-@app.websocket("/interview")
-async def interview_chat(request: Request, ws: WebSocket):
-    first_msg = await interview_service.start_interview()
-    await ws.send(json(first_msg))
+livekit_bp = Blueprint("livekit")
 
-    async for msg in ws:
-        data = json.loads(msg)
-        session_id = data.get("session_id")
-        answer = data.get("answer")
-        try:
-            reply = await interview_service.handle_message(session_id, answer)
-        except Exception as e:
-            print(f"An internal error has occurred: {str(e)}")
+
+@livekit_bp.route("/token", methods=["POST"])
+async def generate_token(request: Request):
+    body = request.json
+
+    if not body or "identity" not in body or "room" not in body:
+        return json({"error": "Missing identity or room"}, status=400)
+
+    identity = body["identity"]
+    room = body["room"]
+    name = body.get("name", "Candidato")
+
+    at = AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET) \
+        .with_identity(identity) \
+        .with_name(name) \
+        .with_grants(
+            VideoGrants(
+                room_join=True,
+                room=room
+            )
+        )
+
+    token = at.to_jwt()
+
+    return json({
+        "token": token,
+        "room": room,
+        "identity": identity,
+        "name": name
+    })
+

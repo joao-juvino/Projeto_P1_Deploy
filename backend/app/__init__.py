@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from app.database.mongo_client import get_database, close_database_connection
 from app.routes.auth_routes import auth_bp
 from app.routes.general_routes import general_bp
+from app.routes.interview_routes import livekit_bp
 from sanic_cors import CORS
 
 """
@@ -42,6 +43,7 @@ def create_app() -> Sanic:
     # Register blueprints
     app.blueprint(general_bp)
     app.blueprint(auth_bp, url_prefix="/auth")
+    app.blueprint(livekit_bp, url_prefix="/livekit")
 
     app.config.CORS_ORIGINS = "*"
     app.config.CORS_ALLOW_HEADERS = "*"
