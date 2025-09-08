@@ -8,7 +8,7 @@ import { CircleX, Mic } from "lucide-react";
 import Image from "next/image";
 
 // --- NOVO: Importando nosso hook para acessar o contexto ---
-import { useInterview } from "@/contexts/InterviewContext";
+import { useInterview } from "../../contexts/InterviewContext";
 
 interface InterviewRoomProps {
   onBack: () => void;

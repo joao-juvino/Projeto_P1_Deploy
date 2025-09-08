@@ -5,7 +5,7 @@ import InterviewFlow from "../components/interview/InterviewFlow";
 import { BookText, Code, Lightbulb, Tag } from "lucide-react";
 import CodeEditor from "../components/CodeEditor";
 
-import { InterviewProvider, useInterview } from "@/contexts/InterviewContext";
+import { InterviewProvider, useInterview } from "../contexts/InterviewContext";
 
 function InterviewLayout() {
   const { currentQuestion } = useInterview();
