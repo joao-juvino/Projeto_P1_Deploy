@@ -38,9 +38,13 @@ async def interview_entrypoint(ctx):
         tts=ElevenLabsTTS()
     )
 
+    # --- ALTERAÇÃO AQUI: Criamos a instância do agente passando a 'ctx.room' ---
+    agent_instance = InterviewAgent(room=ctx.room)
+
     await session.start(
         room=ctx.room,
-        agent=InterviewAgent(),
+        # E usamos a instância já criada aqui
+        agent=agent_instance,
         room_input_options=RoomInputOptions(
             noise_cancellation=noise_cancellation.BVC(),
         ),
@@ -50,4 +54,3 @@ if __name__ == "__main__":
     agents.cli.run_app(
         agents.WorkerOptions(entrypoint_fnc=interview_entrypoint)
     )
-
