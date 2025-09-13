@@ -6,7 +6,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 from livekit.agents import Agent
 from livekit.agents.llm import function_tool
-from livekit.rtc import Room
+from livekit.rtc import Room, DataPacket
 from analyst_agent import generate_analysis_report
 
 load_dotenv()
@@ -32,7 +32,7 @@ You are a Senior Software Engineer conducting a code review. Your task is to pro
 **CANDIDATE'S SOLUTION (Transcribed from their explanation):**
 {user_solution}
 **YOUR TASK:**
-Analyze the candidate's solution by comparing it against the optimal approach in the report. Generate a final report in Markdown (in Brazilian Portuguese) with these sections: 1. Feedback Geral, 2. Corretude e Lógica, 3. Eficiência (Complexidade), 4. Qualidade do Código, 5. Pontos de Melhoria.
+Analyze the candidate's solution by comparing it with the optimal approach in the report. Generate a final report in Markdown with the following sections: 1. General Feedback, 2. Correctness and Logic, 3. Efficiency (Complexity), 4. Code Quality, 5. Areas for Improvement.
 Be professional, encouraging, and technical.
 """
 
@@ -54,8 +54,11 @@ class InterviewAgent(Agent):
         self.current_question = None
         self.current_report = None
 
+        self.on("data_received", self._on_data_received)
+
     @function_tool 
     async def prepare_technical_question(self) -> str:
+
         """
         Gets a new technical problem and calls an external analyst to create a report.
         """
@@ -96,3 +99,35 @@ class InterviewAgent(Agent):
         except Exception as e:
             print(f"ERROR: [Agent] in evaluate_solution: {e}")
             return "Error: Could not generate the feedback report."
+            
+    # A lógica interna deste método já estava correta.
+    async def _on_data_received(self, dp: DataPacket):
+        if dp.topic != "agent_control":
+            return
+            
+        try:
+            message = json.loads(dp.data)
+            
+            if message.get("type") == "SPEAK_EVALUATION_RESULT":
+                code = message["payload"]["text"]
+                
+                feedback_text = await self.evaluate_solution(code)
+
+                if feedback_text:
+                    print(f"INFO: [Agent] Sending and speaking feedback.")
+
+                    # AÇÃO 1: ENVIAR O TEXTO PARA O FRONTEND
+                    frontend_payload = {
+                        "type": "SHOW_EVALUATION_FEEDBACK",
+                        "payload": {"text": feedback_text}
+                    }
+                    await self.room.local_participant.publish_data(
+                        json.dumps(frontend_payload),
+                        topic="interview_events" 
+                    )
+
+                    # AÇÃO 2: FAZER O AGENTE FALAR O TEXTO
+                    await self.say(feedback_text)
+
+        except Exception as e:
+            print(f"ERROR: [Agent] in _on_data_received: {e}")

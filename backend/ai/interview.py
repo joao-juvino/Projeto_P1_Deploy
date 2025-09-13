@@ -5,8 +5,8 @@ from livekit.plugins import noise_cancellation, silero, google
 import elevenlabs
 
 from agent_class import InterviewAgent
-
 load_dotenv()
+agent_instance = None
 
 class ElevenLabsTTS:
     def __init__(self, voice="alloy"):
@@ -21,6 +21,7 @@ class ElevenLabsTTS:
         return audio
 
 async def interview_entrypoint(ctx):
+    global agent_instance 
 
     # Conectar à sala, ouvindo apenas áudio
     await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)

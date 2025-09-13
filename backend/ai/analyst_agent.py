@@ -3,6 +3,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 
 load_dotenv()
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 try:
     genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
@@ -36,7 +37,6 @@ async def generate_analysis_report(question_data: dict) -> str:
     """
     print(f"INFO: [Analyst Agent] Generating report for '{question_data['title']}'...")
     
-    model = genai.GenerativeModel('gemini-1.5-flash')
     
     prompt = REPORT_GENERATION_PROMPT.format(
         title=question_data['title'],
