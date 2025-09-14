@@ -1,57 +1,33 @@
-import { useState, useEffect } from "react";
-import { LiveKitRoom, RoomAudioRenderer, useRoomContext } from "@livekit/components-react";
+import { useState } from "react";
 import InterviewRoom from "./InterviewRoom";
 import { useAuth } from "../../contexts/AuthContext";
 
-const LIVEKIT_URL = process.env.LIVEKIT_URL || "wss://adaai-x3018794.livekit.cloud";
+interface InterviewFlowProps {
+  onStart: () => void;
+  onBack: () => void;
+  showInterview: boolean;
+  isConnecting: boolean;
+  userName?: string;
+}
 
-export default function InterviewFlow() {
+export default function InterviewFlow({
+  onStart,
+  onBack,
+  showInterview,
+  isConnecting,
+  userName,
+}: InterviewFlowProps) {
+  // Preservei o uso de useAuth caso precise do usuário localmente (opcional)
   const { user } = useAuth();
-  const [token, setToken] = useState<string>("");
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [showInterview, setShowInterview] = useState(false);
-
-  const generateToken = async () => {
-    try {
-      setIsConnecting(true);
-      const response = await fetch("http://localhost:8000/livekit/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          room: "dev-room",
-          identity: `${user?.id}-${Date.now()}`,
-          name: user?.name || "Candidato",
-        }),
-        mode: "cors",
-      });
-
-      if (!response.ok) throw new Error("Erro ao gerar token");
-
-      const data = await response.json();
-      setToken(data.token);
-      setShowInterview(true);
-    } catch (error) {
-      console.error("Erro ao conectar:", error);
-      alert("Erro ao conectar. Verifique se o servidor LiveKit está rodando.");
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const handleStartInterview = () => generateToken();
-  const handleBackToDescription = () => {
-    setShowInterview(false);
-    setToken("");
-  };
 
   // Antes de conectar, mostra botão para gerar token
   if (!showInterview) {
     return (
-      <div className="flex w-full justify-center">
+      <div className="flex h-103 w-full justify-center items-center">
         <button
-          onClick={handleStartInterview}
+          onClick={onStart}
           disabled={isConnecting}
-          className="cursor-pointer bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white px-8 py-3 rounded-full font-medium transition-colors disabled:cursor-not-allowed"
+          className="h-15 flex justify-center items-center cursor-pointer bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white px-8 py-3 rounded-full font-medium transition-colors disabled:cursor-not-allowed"
         >
           {isConnecting ? "Conectando..." : "Iniciar Entrevista"}
         </button>
@@ -59,17 +35,6 @@ export default function InterviewFlow() {
     );
   }
 
-  return (
-    <LiveKitRoom
-      token={token}
-      serverUrl={LIVEKIT_URL}
-      data-lk-theme="default"
-      style={{ width: "100%" }}
-      connectOptions={{ autoSubscribe: true }}
-      audio={true}
-    >
-      <InterviewRoom onBack={handleBackToDescription} userName={user?.name} />
-      <RoomAudioRenderer />
-    </LiveKitRoom>
-  );
+  // Quando já estiver conectado, renderizamos o InterviewRoom (que depende do LiveKitRoom)
+  return <InterviewRoom onBack={onBack} userName={userName || user?.name} />;
 }
