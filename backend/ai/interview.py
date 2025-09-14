@@ -1,28 +1,12 @@
 from dotenv import load_dotenv
 from livekit import agents
 from livekit.agents import AgentSession, RoomInputOptions, AutoSubscribe
-from livekit.plugins import noise_cancellation, silero, google
-import elevenlabs
-
+from livekit.plugins import noise_cancellation, silero, google, elevenlabs
 from agent_class import InterviewAgent
+
 load_dotenv()
-agent_instance = None
-
-class ElevenLabsTTS:
-    def __init__(self, voice="alloy"):
-        self.voice = voice
-
-    async def generate(self, text: str) -> bytes:
-        audio = elevenlabs.generate(
-            text=text,
-            voice=self.voice,
-            model="eleven_multilingual_v1"
-        )
-        return audio
 
 async def interview_entrypoint(ctx):
-    global agent_instance 
-
     # Conectar à sala, ouvindo apenas áudio
     await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
 
@@ -36,16 +20,12 @@ async def interview_entrypoint(ctx):
             output_audio_transcription={}
         ),
         vad=silero.VAD.load(),
-        tts=ElevenLabsTTS()
+        tts=elevenlabs.TTS()
     )
-
-    # --- ALTERAÇÃO AQUI: Criamos a instância do agente passando a 'ctx.room' ---
-    agent_instance = InterviewAgent(room=ctx.room)
 
     await session.start(
         room=ctx.room,
-        # E usamos a instância já criada aqui
-        agent=agent_instance,
+        agent=InterviewAgent(),
         room_input_options=RoomInputOptions(
             noise_cancellation=noise_cancellation.BVC(),
         ),

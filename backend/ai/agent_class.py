@@ -2,12 +2,16 @@
 import os
 import json
 import random
+import logging
 import google.generativeai as genai
 from dotenv import load_dotenv
 from livekit.agents import Agent
 from livekit.agents.llm import function_tool
 from livekit.rtc import Room, DataPacket
 from analyst_agent import generate_analysis_report
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -48,21 +52,22 @@ Do not end the interview. Continue this cycle until the user decides to end the 
 """
 
 class InterviewAgent(Agent):
-    def __init__(self, room: Room):
-        super().__init__(instructions=SYSTEM_PROMPT_INTERVIEWER)
-        self.room = room
+    def __init__(self, **kwargs):  # ✅ REMOVER room do construtor
+        super().__init__(instructions=SYSTEM_PROMPT_INTERVIEWER, **kwargs)
+        self.room = None  # ✅ Será injetado pelo framework
         self.current_question = None
         self.current_report = None
-
         self.on("data_received", self._on_data_received)
+        logger.info("InterviewAgent inicializado e ouvindo eventos.")
+    
+    async def on_start(self, room: Room):
+        """Método chamado automaticamente pelo framework"""
+        self.room = room
+        logger.info(f"✅ Agent conectado à sala: {room.name}")
 
     @function_tool 
     async def prepare_technical_question(self) -> str:
-
-        """
-        Gets a new technical problem and calls an external analyst to create a report.
-        """
-        print("INFO: [Agent] Tool 'prepare_technical_question' called.")
+        logger.info("Tool 'prepare_technical_question' called.")
         try:
             with open("data/questions.json", "r", encoding="utf-8") as f:
                 questions = json.load(f)
@@ -72,21 +77,22 @@ class InterviewAgent(Agent):
             report = await generate_analysis_report(selected_question)
             self.current_report = report
 
-            frontend_payload = {"type": "SHOW_TECHNICAL_QUESTION", "payload": selected_question}
-            message_str = json.dumps(frontend_payload)
-            await self.room.local_participant.publish_data(message_str, topic="interview_events")
+            # ✅ Verificar se room está disponível
+            if self.room and self.room.local_participant:
+                frontend_payload = {"type": "SHOW_TECHNICAL_QUESTION", "payload": selected_question}
+                await self.room.local_participant.publish_data(
+                    json.dumps(frontend_payload), 
+                    topic="interview_events"
+                )
 
             return report
         except Exception as e:
-            print(f"ERROR: [Agent] in prepare_technical_question: {e}")
+            logger.error(f"Error in prepare_technical_question: {e}")
             return "Error: Could not prepare the technical question."
 
     @function_tool
     async def evaluate_solution(self, user_solution: str) -> str:
-        """
-        Evaluates the candidate's solution using its own internal AI logic.
-        """
-        print("INFO: [Agent] Tool 'evaluate_solution' called.")
+        logger.info("Tool 'evaluate_solution' called.")
         if not self.current_report:
             return "Error: A technical question's analysis report must be prepared first."
         try:
@@ -97,10 +103,9 @@ class InterviewAgent(Agent):
             response = await MODEL.generate_content_async(prompt)
             return response.text
         except Exception as e:
-            print(f"ERROR: [Agent] in evaluate_solution: {e}")
+            logger.error(f"Error in evaluate_solution: {e}")
             return "Error: Could not generate the feedback report."
             
-    # A lógica interna deste método já estava correta.
     async def _on_data_received(self, dp: DataPacket):
         if dp.topic != "agent_control":
             return
@@ -113,10 +118,10 @@ class InterviewAgent(Agent):
                 
                 feedback_text = await self.evaluate_solution(code)
 
-                if feedback_text:
-                    print(f"INFO: [Agent] Sending and speaking feedback.")
+                if feedback_text and self.room and self.room.local_participant:
+                    logger.info("Sending and speaking feedback.")
 
-                    # AÇÃO 1: ENVIAR O TEXTO PARA O FRONTEND
+                    # Enviar para frontend
                     frontend_payload = {
                         "type": "SHOW_EVALUATION_FEEDBACK",
                         "payload": {"text": feedback_text}
@@ -126,8 +131,10 @@ class InterviewAgent(Agent):
                         topic="interview_events" 
                     )
 
-                    # AÇÃO 2: FAZER O AGENTE FALAR O TEXTO
+                    # Falar o feedback (com verificação de tamanho)
+                    if len(feedback_text) > 4000:
+                        feedback_text = feedback_text[:4000] + "... (truncated)"
                     await self.say(feedback_text)
 
         except Exception as e:
-            print(f"ERROR: [Agent] in _on_data_received: {e}")
+            logger.error(f"Error in _on_data_received: {e}")
