@@ -11,6 +11,7 @@ from livekit.rtc import Room, DataPacket
 from analyst_agent import generate_analysis_report
 
 logging.basicConfig(level=logging.INFO)
+logging.getLogger("websockets").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 load_dotenv()
@@ -98,14 +99,19 @@ class InterviewAgent(Agent):
 
     async def evaluate_partial_solution(self, user_solution: str) -> str:
         """Avaliação parcial - não é @function_tool"""
+        logger.info("Recebido pedido de feedback parcial.")
         if not self.current_report:
             return "Error: No technical question prepared."
         try:
+            
+            logger.info(f"Payload recebido: 2")
             prompt = PROMPT_MEDIUM.format(
                 analysis_report=self.current_report,
                 user_solution=user_solution
             )
+            logger.info(f"Payload recebido: {prompt}")
             response = await MODEL_LIGHT.generate_content_async(prompt)
+            logger.info(f"Payload recebido: {response}")
             return response.text
         except Exception as e:
             logger.error(f"Error in evaluate_partial_solution: {e}")
@@ -127,15 +133,23 @@ class InterviewAgent(Agent):
             return "Error: Could not generate final feedback."
             
     async def on_data_received(self, dp: DataPacket):
+        print("TESTE")
         if dp.topic != "agent_control":
             return
-            
+
         try:
-            message = json.loads(dp.data)
+            # --- CONVERSÃO CORRETA ---
+            if isinstance(dp.data, bytes):
+                data_str = dp.data.decode("utf-8")
+            else:
+                data_str = str(dp.data)
+
+            message = json.loads(data_str)
             msg_type = message.get("type")
             
             if msg_type == "REQUEST_PARTIAL_FEEDBACK":
                 code = message.get("payload", {}).get("text", "")
+                print("Recebido pedido de feedback parcial:", code)
                 logger.info("Recebido pedido de feedback parcial.")
                 
                 await self.say("Analisando seu progresso, um momento...", allow_interruptions=True)
@@ -151,7 +165,7 @@ class InterviewAgent(Agent):
                         topic="interview_events" 
                     )
                     await self.say(feedback_text, allow_interruptions=True)
-            
+
             elif msg_type == "SUBMIT_SOLUTION_FINAL":
                 code = message.get("payload", {}).get("text", "")
                 logger.info("Recebida submissão de solução final.")
@@ -169,7 +183,7 @@ class InterviewAgent(Agent):
                         topic="interview_events" 
                     )
                     await self.say(feedback_text, allow_interruptions=False)
-            
+
             elif msg_type == "SPEAK_EVALUATION_RESULT": 
                 code = message.get("payload", {}).get("text", "")
                 logger.info("Recebido pedido de avaliação (legado).")
