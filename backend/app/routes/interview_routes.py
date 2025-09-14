@@ -1,7 +1,8 @@
 import os
 from sanic import Blueprint, Request
-from sanic.response import json
+from sanic.response import json as sanic_json
 from livekit.api import AccessToken, VideoGrants
+
 
 LIVEKIT_API_KEY = os.getenv("LIVEKIT_API_KEY")
 LIVEKIT_API_SECRET = os.getenv("LIVEKIT_API_SECRET")
@@ -14,7 +15,8 @@ async def generate_token(request: Request):
     body = request.json
 
     if not body or "identity" not in body or "room" not in body:
-        return json({"error": "Missing identity or room"}, status=400)
+
+        return sanic_json({"error": "Missing identity or room"}, status=400)
 
     identity = body["identity"]
     room = body["room"]
@@ -32,10 +34,10 @@ async def generate_token(request: Request):
 
     token = at.to_jwt()
 
-    return json({
+
+    return sanic_json({
         "token": token,
         "room": room,
         "identity": identity,
         "name": name
     })
-
