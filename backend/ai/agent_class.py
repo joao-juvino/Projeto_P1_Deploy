@@ -173,7 +173,7 @@ class InterviewAgent(Agent):
                     )
                     await self.say(feedback_text, allow_interruptions=False)
             
-            elif msg_type == "SPEAK_EVALUATION_RESULT":  # Mantém compatibilidade
+            elif msg_type == "SPEAK_EVALUATION_RESULT": 
                 code = message.get("payload", {}).get("text", "")
                 logger.info("Recebido pedido de avaliação (legado).")
                 feedback_text = await self.evaluate_final_solution(code)
