@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  # Backend principal (Sanic)
+  backend:
+    build: C:\Users\Desktop\Documents\Projeto_P1\backend
+    container_name: interview_backend
+    command: ["python", "main.py"]
+    ports:
+      - "8000:8000"
+    volumes:
+      - C:\Users\Desktop\Documents\Projeto_P1\backend:\app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
+      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+
+  # Backend AI (LiveKit Agent)
+  backend_ai:
+    build: C:\Users\Desktop\Documents\Projeto_P1\backend\ai
+    container_name: interview_backend_ai
+    command: ["python", "interview.py", "dev"]
+    volumes:
+      - C:\Users\Desktop\Documents\Projeto_P1\backend\ai:\app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LIVEKIT_API_KEY=${LIVEKIT_API_KEY}
+      - LIVEKIT_API_SECRET=${LIVEKIT_API_SECRET}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    depends_on:
+      - backend
+
+  # Frontend Next.js
+  frontend:
+    build: C:\Users\Desktop\Documents\Projeto_P1\frontend\projetop1
+    container_name: interview_frontend
+    command: ["npm", "run", "dev"]
+    ports:
+      - "3000:3000"
+    volumes:
+      - C:\Users\Desktop\Documents\Projeto_P1\frontend\projetop1:\app
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - backend
+      - backend_ai
