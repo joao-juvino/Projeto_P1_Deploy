@@ -5,8 +5,6 @@ WORKDIR /app
 # Copia manifestos
 COPY package*.json ./
 
-RUN npm install --legacy-peer-deps
-
 # Código
 COPY . .
 
