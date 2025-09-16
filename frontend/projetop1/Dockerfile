@@ -5,13 +5,7 @@ WORKDIR /app
 # Copia manifestos
 COPY package*.json ./
 
-# Usa npm ci se houver package-lock.json; senão, npm install
-# --legacy-peer-deps ajuda a evitar conflito de peer deps em dev
-RUN if [ -f package-lock.json ]; then \
-      npm ci --legacy-peer-deps ; \
-    else \
-      npm install --legacy-peer-deps ; \
-    fi
+RUN npm install --legacy-peer-deps
 
 # Código
 COPY . .
