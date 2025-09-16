@@ -1,0 +1,52 @@
+[
+  {
+    "questionId": "1",
+    "title": "Dois Números",
+    "difficulty": "Fácil",
+    "topicTags": [
+      "Array",
+      "Hash Table"
+    ],
+    "stats": {
+      "totalAccepted": "18.5M",
+      "totalSubmission": "33M",
+      "totalAcceptedRaw": 18523148,
+      "totalSubmissionRaw": 32967636,
+      "acRate": "56.2%"
+    },
+    "content": "DESCRIÇÃO:\nDado um array de inteiros nums e um inteiro target, retorne os índices de dois números tais que a soma deles seja igual a target.\nVocê pode assumir que cada entrada terá exatamente uma solução e não pode usar o mesmo elemento duas vezes.\nVocê pode retornar a resposta em qualquer ordem.\n\nEXEMPLO/CÓDIGO:\nEntrada:\nnums = [2,7,11,15], target = 9\nSaída:\n[0,1]\nExplicação:\nPorque nums[0] + nums[1] == 9, retornamos [0, 1].\n\nEXEMPLO/CÓDIGO:\nEntrada:\nnums = [3,2,4], target = 6\nSaída:\n[1,2]\n\nEXEMPLO/CÓDIGO:\nEntrada:\nnums = [3,3], target = 6\nSaída:\n[0,1]\n\nRESTRIÇÕES:\n- 2 <= nums.length <= 10⁴\n- -10⁹ <= nums[i] <= 10⁹\n- -10⁹ <= target <= 10⁹\n- Existe exatamente uma resposta válida."
+  },
+  {
+    "questionId": "2",
+    "title": "Verificar Palíndromo",
+    "difficulty": "Fácil",
+    "topicTags": [
+      "Two Pointers",
+      "String"
+    ],
+    "stats": {
+      "totalAccepted": "6.2M",
+      "totalSubmission": "12.1M",
+      "totalAcceptedRaw": 6200000,
+      "totalSubmissionRaw": 12100000,
+      "acRate": "51.2%"
+    },
+    "content": "DESCRIÇÃO:\nDada uma string s, verifique se ela é um palíndromo, considerando apenas caracteres alfanuméricos e ignorando diferenças entre maiúsculas e minúsculas.\n\nEXEMPLO/CÓDIGO:\nEntrada:\ns = \"A man, a plan, a canal: Panama\"\nSaída:\ntrue\nExplicação:\n\"amanaplanacanalpanama\" é um palíndromo.\n\nEXEMPLO/CÓDIGO:\nEntrada:\ns = \"race a car\"\nSaída:\nfalse\nExplicação:\n\"raceacar\" não é um palíndromo.\n\nRESTRIÇÕES:\n- 1 <= s.length <= 2 * 10⁵\n- s consiste apenas em caracteres imprimíveis ASCII."
+  },
+  {
+    "questionId": "3",
+    "title": "Encontrar o Maior Número",
+    "difficulty": "Fácil",
+    "topicTags": [
+      "Array"
+    ],
+    "stats": {
+      "totalAccepted": "4.3M",
+      "totalSubmission": "6.9M",
+      "totalAcceptedRaw": 4300000,
+      "totalSubmissionRaw": 6900000,
+      "acRate": "62.3%"
+    },
+    "content": "DESCRIÇÃO:\nDado um array de inteiros nums, retorne o maior número presente no array.\n\nEXEMPLO/CÓDIGO:\nEntrada:\nnums = [1, 5, 3, 9, 2]\nSaída:\n9\n\nEXEMPLO/CÓDIGO:\nEntrada:\nnums = [-10, -3, -50, -1]\nSaída:\n-1\n\nRESTRIÇÕES:\n- 1 <= nums.length <= 10⁴\n- -10⁵ <= nums[i] <= 10⁵"
+  }
+]
