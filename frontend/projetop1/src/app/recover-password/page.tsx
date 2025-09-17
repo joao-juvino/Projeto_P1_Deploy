@@ -1,10 +1,11 @@
+
+/*
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Input from "../components/Input";
 import AuthLinks from "../components/AuthLinks";
-import { authService, ApiError } from "../services/auth";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -104,7 +105,7 @@ function ResetPasswordForm() {
           </p>
         </div>
 
-        {/* Mensagens de feedback */}
+        {/* Mensagens de feedback
         {error && (
           <div className="w-full max-w-[350px] bg-red-50 border border-red-200 rounded p-3 mb-4">
             <p className="text-red-700 text-sm">{error}</p>
