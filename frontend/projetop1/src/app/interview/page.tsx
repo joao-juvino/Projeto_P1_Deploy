@@ -41,7 +41,8 @@ function InterviewLayout() {
   const generateToken = async () => {
     try {
       setIsConnecting(true);
-      const response = await fetch(`${API_BASE_URL}/livekit/token`, {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://insufficient-aurelie-ada-ai-1318dfea.koyeb.app";
+      const response = await fetch(API_BASE_URL + "/livekit/token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
