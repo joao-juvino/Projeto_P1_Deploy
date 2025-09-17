@@ -51,7 +51,7 @@ def create_app() -> Sanic:
 
     CORS(
         app,
-        origins="*",
+        origins="https://projeto-p1-deploy.onrender.com/",
         allow_headers=["Content-Type", "Authorization"],
         methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
     )
