@@ -1,5 +1,6 @@
 "use client";
-import { Button, Select } from "antd";
+
+import { Select } from "antd";
 import ProtectedRoute from "../components/ProtectedRoute";
 import InterviewFlow from "../components/interview/InterviewFlow";
 import { BookText, Code, Lightbulb, Tag } from "lucide-react";
@@ -19,10 +20,14 @@ import {
 const LIVEKIT_URL =
   process.env.LIVEKIT_URL || "wss://adaai-x3018794.livekit.cloud";
 
+// URL do backend (defina NEXT_PUBLIC_API_BASE_URL no Vercel)
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+
 // ===========================================================
-// MAIN INTERVIEW LAYOUT
+// MAIN INTERVIEW LAYOUT  (sem export!)
 // ===========================================================
-export function InterviewLayout() {
+function InterviewLayout() {
   const { currentQuestion } = useInterview();
   const { user } = useAuth();
 
@@ -36,7 +41,7 @@ export function InterviewLayout() {
   const generateToken = async () => {
     try {
       setIsConnecting(true);
-      const response = await fetch("http://localhost:8000/livekit/token", {
+      const response = await fetch(`${API_BASE_URL}/livekit/token`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -123,7 +128,9 @@ export function InterviewLayout() {
                 </>
               ) : (
                 <div className="text-center text-gray-400 py-20">
-                  <h1 className="text-2xl font-bold">Aguardando a pergunta...</h1>
+                  <h1 className="text-2xl font-bold">
+                    Aguardando a pergunta...
+                  </h1>
                   <p className="mt-2">
                     Ada, a entrevistadora, irá fornecer a pergunta técnica em
                     breve.
@@ -258,12 +265,14 @@ function FeedbackPanel({ code }: { code: string }) {
         <button
           className="bg-orange-500 text-white py-3 px-5 rounded-full cursor-pointer"
           onClick={() => sendEvent("REQUEST_PARTIAL_FEEDBACK")}
+          disabled={isLoading}
         >
           Feedback Parcial
         </button>
         <button
           className="bg-orange-500 text-white py-3 px-5 rounded-full cursor-pointer"
           onClick={() => sendEvent("SUBMIT_SOLUTION_FINAL")}
+          disabled={isLoading}
         >
           Enviar Solução Final
         </button>
@@ -278,7 +287,6 @@ function FeedbackPanel({ code }: { code: string }) {
     </>
   );
 }
-
 
 // ===========================================================
 // PAGE WRAPPER
