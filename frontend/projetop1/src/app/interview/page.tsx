@@ -18,7 +18,7 @@ import {
 } from "@livekit/components-react";
 
 const LIVEKIT_URL =
-  process.env.LIVEKIT_URL || "wss://adaai-x3018794.livekit.cloud";
+  process.env.LIVEKIT_URL || "https://gabrieldsa25-projeto-p1-ai.hf.space";
 
 // URL do backend (defina NEXT_PUBLIC_API_BASE_URL no Vercel)
 const API_BASE_URL =
