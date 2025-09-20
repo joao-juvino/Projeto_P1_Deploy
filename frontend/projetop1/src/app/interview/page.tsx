@@ -16,13 +16,14 @@ import {
   useRoomContext,
   useDataChannel,
 } from "@livekit/components-react";
+import { useRouter } from "next/navigation";
 
 const LIVEKIT_URL =
-  process.env.LIVEKIT_URL || "https://gabrieldsa25-projeto-p1-ai.hf.space";
+  process.env.LIVEKIT_URL || "wss://adaai-x3018794.livekit.cloud";
 
 // URL do backend (defina NEXT_PUBLIC_API_BASE_URL no Vercel)
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://insufficient-aurelie-ada-ai-1318dfea.koyeb.app";
 
 // ===========================================================
 // MAIN INTERVIEW LAYOUT  (sem export!)
@@ -219,7 +220,7 @@ function FeedbackPanel({ code }: { code: string }) {
   const room = useRoomContext();
   const [isLoading, setIsLoading] = useState(false);
   const [feedback, setFeedback] = useState("");
-
+  const router = useRouter();
   // Receber feedbacks do agente
   useDataChannel("interview_events", (msg) => {
     try {
@@ -238,6 +239,7 @@ function FeedbackPanel({ code }: { code: string }) {
       if (data.type === "PARTIAL_FEEDBACK_RESULT") {
         setFeedback(data.payload.text);
       } else if (data.type === "FINAL_FEEDBACK_RESULT") {
+        router.push(`/feedback?feedback=${data.payload.text}`);
         setFeedback(data.payload.text);
       } else if (data.type === "SHOW_EVALUATION_FEEDBACK") {
         setFeedback(data.payload.text);
@@ -261,7 +263,7 @@ function FeedbackPanel({ code }: { code: string }) {
   };
 
   return (
-    <>
+    <div className="!h-300 overflow-scroll">
       <div className="flex justify-end gap-3 mt-5">
         <button
           className="bg-orange-500 text-white py-3 px-5 rounded-full cursor-pointer"
@@ -285,7 +287,7 @@ function FeedbackPanel({ code }: { code: string }) {
           <pre className="whitespace-pre-wrap text-sm">{feedback}</pre>
         </div>
       )}
-    </>
+    </div>
   );
 }
 

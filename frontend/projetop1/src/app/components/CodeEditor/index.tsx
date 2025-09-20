@@ -16,7 +16,9 @@ export default function CodeEditor({ value, onChange }: CodeEditorProps) {
         extensions={[javascript({ jsx: true })]}
         onChange={(value) => onChange(value)}
         style={{
-          height: "100%"
+          height: "100%",
+          maxHeight: "300px",
+          overflow: "scroll",
         }}
       />
   );
